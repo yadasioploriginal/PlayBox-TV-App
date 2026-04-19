@@ -1,0 +1,77 @@
+name: Build PlayBoxTV IPA
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'IOS/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+    - name: Show Xcode version
+      run: xcodebuild -version
+
+    - name: Build PlayBoxTV (unsigned)
+      working-directory: IOS
+      run: |
+        xcodebuild \
+          -project PlayBoxTV.xcodeproj \
+          -scheme PlayBoxTV \
+          -configuration Release \
+          -sdk iphoneos \
+          -destination 'generic/platform=iOS' \
+          -archivePath $RUNNER_TEMP/PlayBoxTV.xcarchive \
+          CODE_SIGN_IDENTITY="-" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          AD_HOC_CODE_SIGNING_ALLOWED=YES \
+          archive
+
+    - name: Create IPA from archive
+      run: |
+        mkdir -p $RUNNER_TEMP/Payload
+        cp -r $RUNNER_TEMP/PlayBoxTV.xcarchive/Products/Applications/PlayBoxTV.app $RUNNER_TEMP/Payload/
+        cd $RUNNER_TEMP
+        zip -r PlayBoxTV.ipa Payload
+        cp PlayBoxTV.ipa $GITHUB_WORKSPACE/
+
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PlayBoxTV-IPA
+        path: PlayBoxTV.ipa
+        retention-days: 90
+
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d_%H-%M')" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ios-v1.0-${{ steps.date.outputs.date }}
+        name: "PlayBox TV iOS v1.0 (${{ steps.date.outputs.date }})"
+        body: |
+          ## PlayBox TV - iOS App
+          
+          📱 Pobierz plik `.ipa` poniżej i zainstaluj przez AltStore, Sideloadly, lub TrollStore.
+          
+          ### Linki w aplikacji:
+          - 🔗 Główny: `https://stare.playboxtv.pl.eu.org/app`
+          - 🔄 Fallback 1: `https://tv.yadasiopl.pl.eu.org/app`
+          - 🔄 Fallback 2: `https://pbtv.netlify.app/app`
+        files: PlayBoxTV.ipa
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
