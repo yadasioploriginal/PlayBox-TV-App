@@ -65,14 +65,14 @@ jobs:
         tag_name: ios-v1.0-${{ steps.date.outputs.date }}
         name: "PlayBox TV iOS v1.0 (${{ steps.date.outputs.date }})"
         body: |
-          ## PlayBox TV - iOS App
+          ## PlayBox TV - Natywna aplikacja iOS
           
           📱 Pobierz plik `.ipa` poniżej i zainstaluj przez AltStore, Sideloadly, lub TrollStore.
           
-          ### Linki w aplikacji:
-          - 🔗 Główny: `https://stare.playboxtv.pl.eu.org/app`
-          - 🔄 Fallback 1: `https://tv.yadasiopl.pl.eu.org/app`
-          - 🔄 Fallback 2: `https://pbtv.netlify.app/app`
+          ✨ Zmiany w tej wersji:
+          - Pełny przepis na natywnego klienta w SwiftUI (brak lagującego WebView).
+          - Wbudowany natywny odtwarzacz AVPlayer z szybkim buforowaniem.
+          - Bezpośredni strumień HLS (.m3u8).
         files: PlayBoxTV.ipa
         draft: false
         prerelease: false
